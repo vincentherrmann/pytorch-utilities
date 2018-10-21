@@ -28,7 +28,7 @@ class GCSManager():
                     print('finished downloading', file_name)
                     i += 1
                     break
-                elif returncode < 0:
+                else:
                     print('error while downloading ' + file_name + ': ' + str(returncode))
                 arguments = ['gsutil', 'cp', file, file_target]
                 print("download", file, "to", file_target)
@@ -50,10 +50,10 @@ class GCSManager():
                 arguments = ['gsutil', 'cp', file, file_target]
                 try:
                     returncode = subprocess.call(arguments)
-                    if returncode >= 0:
-                        print('finished uploading', file_name)
-                        i += 1
-                        break
+                    #if returncode >= 0:
+                    #    print('finished uploading', file_name)
+                    #    i += 1
+                    break
                 except:
                     print('error while uploading ' + file_name + ': ' + str(returncode))
 
