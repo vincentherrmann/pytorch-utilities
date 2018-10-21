@@ -21,7 +21,7 @@ class GCSManager():
             os.makedirs(target_location)
         while i < len(files):
             for _ in range(10):  # try ten times
-                file = files[i]
+                file = os.path.join(self.gc_bucket, files[i])
                 file_name = os.path.basename(file)
                 file_target = os.path.join(target_location, file_name)
                 if os.path.isfile(file_target):
@@ -31,6 +31,7 @@ class GCSManager():
                 elif returncode < 0:
                     print('error while downloading ' + file_name + ': ' + str(returncode))
                 arguments = ['gsutil', 'cp', file, file_target]
+                print("download", file, "to", file_target)
                 returncode = subprocess.call(arguments)
 
     def download_files_in_background(self, files, target_location):
@@ -42,7 +43,7 @@ class GCSManager():
         returncode = 0
         while i < len(files):
             for _ in range(10):  # try ten times
-                file = os.path.join(self.gc_bucket, files[i])
+                file = files[i]
                 file_name = os.path.basename(file)
                 file_target = os.path.join(self.gc_bucket, target_location, file_name)
 
