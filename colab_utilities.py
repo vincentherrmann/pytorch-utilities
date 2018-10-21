@@ -17,11 +17,13 @@ class GCSManager():
     def download_files(self, files, target_location):
         i = 0
         returncode = 0
+        if not os.path.exists(target_location):
+            os.makedirs(target_location)
         while i < len(files):
             for _ in range(10):  # try ten times
                 file = files[i]
                 file_name = os.path.basename(file)
-                file_target = os.path.join(self.gc_bucket, target_location, file_name)
+                file_target = os.path.join(target_location, file_name)
                 if os.path.isfile(file_target):
                     print('finished downloading', file_name)
                     i += 1
@@ -42,7 +44,7 @@ class GCSManager():
             for _ in range(10):  # try ten times
                 file = os.path.join(self.gc_bucket, files[i])
                 file_name = os.path.basename(file)
-                file_target = os.path.join(target_location, file_name)
+                file_target = os.path.join(self.gc_bucket, target_location, file_name)
 
                 arguments = ['gsutil', 'cp', file, file_target]
                 try:
