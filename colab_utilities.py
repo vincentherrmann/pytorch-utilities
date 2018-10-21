@@ -28,8 +28,8 @@ class GCSManager():
                     print('finished downloading', file_name)
                     i += 1
                     break
-                else:
-                    print('error while downloading ' + file_name + ': ' + str(returncode))
+                #else:
+                #    print('error while downloading ' + file_name + ': ' + str(returncode))
                 arguments = ['gsutil', 'cp', file, file_target]
                 print("download", file, "to", file_target)
                 returncode = subprocess.call(arguments)
