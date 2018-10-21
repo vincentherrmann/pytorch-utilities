@@ -47,7 +47,7 @@ class Logger:
         print("loss at step " + str(current_step) + ": " + str(avg_loss))
 
     def validate(self, current_step):
-        avg_loss, avg_accuracy = self.trainer.validate()
+        avg_loss, avg_accuracy = self.validation_function()
         print("validation loss: " + str(avg_loss))
         print("validation accuracy: " + str(avg_accuracy * 100) + "%")
 
@@ -86,7 +86,7 @@ class JupyterLogger(Logger):
         self.draw()
 
     def validate(self, current_step):
-        avg_loss, avg_accuracy = self.trainer.validate()
+        avg_loss, avg_accuracy = self.validation_function()
         self.validation_steps.append(current_step)
         self.validation_losses.append(avg_loss)
         self.validation_accuracies.append(avg_accuracy)
@@ -116,13 +116,15 @@ class TensorboardLogger(Logger):
                  background_function=None,
                  background_interval=1000,
                  log_directory='logs',
-                 log_histograms=False):
+                 log_histograms=False,
+                 model=None):
         super().__init__(log_interval=log_interval,
                          validation_function=validation_function,
                          validation_interval=validation_interval,
                          background_function=background_function,
                          background_interval=background_interval)
         self.tb_writer = tf.summary.FileWriter(log_directory)
+        self.model = model
         self.log_histograms = log_histograms
 
     def log_loss(self, current_step):
@@ -130,12 +132,12 @@ class TensorboardLogger(Logger):
         self.scalar_summary('loss', avg_loss, current_step)
 
     def validate(self, current_step):
-        avg_loss, avg_accuracy = self.trainer.validate()
+        avg_loss, avg_accuracy = self.validation_function()
         self.scalar_summary('validation loss', avg_loss, current_step)
         self.scalar_summary('validation accuracy', avg_accuracy, current_step)
 
         # parameter histograms
-        if not self.log_histograms:
+        if not self.log_histograms or self.model is None:
             return
         for tag, value, in self.trainer.model.named_parameters():
             tag = tag.replace('.', '/')
