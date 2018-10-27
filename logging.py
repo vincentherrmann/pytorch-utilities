@@ -11,7 +11,7 @@ except ImportError:
     from io import BytesIO  # Python 3.x
 
 
-class Logger:
+class TextLogger:
     def __init__(self,
                  log_interval=100,
                  validation_function=None,
@@ -61,7 +61,7 @@ class Logger:
             self.background_thread.start()
 
 
-class JupyterLogger(Logger):
+class JupyterLogger(TextLogger):
     def __init__(self,
                  log_interval=100,
                  validation_function=None,
@@ -108,7 +108,7 @@ class JupyterLogger(Logger):
         plt.show()
 
 
-class TensorboardLogger(Logger):
+class TensorboardLogger(TextLogger):
     def __init__(self,
                  log_interval=100,
                  validation_function=None,
