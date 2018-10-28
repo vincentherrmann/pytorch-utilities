@@ -84,7 +84,7 @@ class GCSManager():
 
         for i in range(max_count):
             file = files[i]
-            name = os.path.basename(file.name)
+            name = os.path.basename(file)
             file_name = os.path.join(self.gc_bucket, target_location, name)
             blob = self.bucket.blob(file_name)
             blob.upload_from_filename(file)
