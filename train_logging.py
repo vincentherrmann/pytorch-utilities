@@ -32,7 +32,7 @@ class TextLogger:
         self.accumulated_loss = 0
         if self.background_function is not None:
             self.background_thread = threading.Thread(target=self.background_function)
-            self.background_function.daemon = True
+            self.background_thread.daemon = True
 
     def log(self, current_step, current_loss):
         self.accumulated_loss += current_loss
