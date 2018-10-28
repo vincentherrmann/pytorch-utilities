@@ -15,7 +15,7 @@ class GCSManager():
         auth.authenticate_user()
         self.storage_client = storage.Client(project_id)
         self.bucket = self.storage_client.get_bucket(bucket)
-        self.gc_bucket = 'gs://' + bucket
+        self.gc_bucket = '' #'gs://' + bucket
 
     def download_files(self, files, target_location):
         i = 0
@@ -143,11 +143,11 @@ class SnapshotManager():
     def upload_latest_files(self):
         self.gcs_manager.upload_files_from_directory(self.snapshot_location, self.gcs_snapshot_location, max_count=1)
         if self.logs_location is not None:
-            self.gcs_manager.upload_files_from_directory(self.logs_location, self.gcs_logs_location)
+            self.gcs_manager.upload_files_from_directory(self.current_tb_location, self.gcs_logs_location)
 
     def download_latest_files(self):
         self.gcs_manager.download_files_from_directory(self.gcs_snapshot_location, self.snapshot_location, max_count=1)
         if self.logs_location is not None:
-            self.gcs_manager.download_files_from_directory(self.gcs_logs_location, self.logs_location)
+            self.gcs_manager.download_files_from_directory(self.gcs_logs_location, self.current_tb_location)
 
 
