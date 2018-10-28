@@ -94,16 +94,14 @@ class GCSManager():
 class SnapshotManager():
     def __init__(self,
                  model,
-                 gce_manager,
+                 gcs_manager,
                  name='model',
                  snapshot_location='snapshots',
                  logs_location=None,
-                 gcs_manager=None,
                  gcs_snapshot_location=None,
                  gcs_logs_location=None,
                  use_only_state_dict=False):
         self.model = model
-        self.gce_manager = gce_manager
         self._name = name
         self.snapshot_location = snapshot_location
         self.logs_location = logs_location
