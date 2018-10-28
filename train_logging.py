@@ -16,12 +16,16 @@ class TextLogger:
                  log_interval=100,
                  validation_function=None,
                  validation_interval=1000,
+                 snapshot_function=None,
+                 snapshot_interval=1000,
                  background_function=None,
                  background_interval=1000):
 
         self.log_interval = log_interval
         self.validation_function = validation_function
         self.validation_interval = validation_interval
+        self.snapshot_function = snapshot_function
+        self.snapshot_interval = snapshot_interval
         self.background_function = background_function
         self.background_interval = background_interval
 
@@ -38,6 +42,9 @@ class TextLogger:
         if current_step % self.validation_interval == 0:
             if self.validation_function is not None:
                 self.validate(current_step)
+        if current_step % self.snapshot_interval == 0:
+            if self.snapshot_function is not None:
+                self.snapshot(current_step)
         if current_step % self.background_interval == 0:
             if self.background_function is not None:
                 self.background(current_step)
@@ -50,6 +57,9 @@ class TextLogger:
         avg_loss, avg_accuracy = self.validation_function()
         print("validation loss: " + str(avg_loss))
         print("validation accuracy: " + str(avg_accuracy * 100) + "%")
+
+    def snapshot(self, current_step):
+        self.snapshot_function(current_step)
 
     def background(self, current_step):
         if self.background_thread.is_alive():
@@ -66,11 +76,15 @@ class JupyterLogger(TextLogger):
                  log_interval=100,
                  validation_function=None,
                  validation_interval=1000,
+                 snapshot_function=None,
+                 snapshot_interval=1000,
                  background_function=None,
                  background_interval=1000):
         super().__init__(log_interval=log_interval,
                          validation_function=validation_function,
                          validation_interval=validation_interval,
+                         snapshot_function=snapshot_function,
+                         snapshot_interval=snapshot_interval,
                          background_function=background_function,
                          background_interval=background_interval)
         self.loss_steps = []
@@ -113,6 +127,8 @@ class TensorboardLogger(TextLogger):
                  log_interval=100,
                  validation_function=None,
                  validation_interval=1000,
+                 snapshot_function=None,
+                 snapshot_interval=1000,
                  background_function=None,
                  background_interval=1000,
                  log_directory='logs',
@@ -121,6 +137,8 @@ class TensorboardLogger(TextLogger):
         super().__init__(log_interval=log_interval,
                          validation_function=validation_function,
                          validation_interval=validation_interval,
+                         snapshot_function=snapshot_function,
+                         snapshot_interval=snapshot_interval,
                          background_function=background_function,
                          background_interval=background_interval)
         self.tb_writer = tf.summary.FileWriter(log_directory)
