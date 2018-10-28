@@ -166,7 +166,7 @@ class TensorboardLogger(TextLogger):
     def scalar_summary(self, tag, value, step):
         """Log a scalar variable."""
         summary = tf.Summary(value=[tf.Summary.Value(tag=tag, simple_value=value)])
-        self.writer.add_summary(summary, step)
+        self.tb_writer.add_summary(summary, step)
 
     def image_summary(self, tag, images, step):
         """Log a list of images."""
@@ -189,14 +189,14 @@ class TensorboardLogger(TextLogger):
 
         # Create and write Summary
         summary = tf.Summary(value=img_summaries)
-        self.writer.add_summary(summary, step)
+        self.tb_writer.add_summary(summary, step)
 
     def audio_summary(self, tag, sample, step, sr=16000):
         with tf.Session() as sess:
             audio_summary = tf.summary.audio(tag, sample, sample_rate=sr, max_outputs=4)
             summary = sess.run(audio_summary)
-            self.writer.add_summary(summary, step)
-            self.writer.flush()
+            self.tb_writer.add_summary(summary, step)
+            self.tb_writer.flush()
 
 
     def histo_summary(self, tag, values, step, bins=200):
@@ -224,11 +224,11 @@ class TensorboardLogger(TextLogger):
 
         # Create and write Summary
         summary = tf.Summary(value=[tf.Summary.Value(tag=tag, histo=hist)])
-        self.writer.add_summary(summary, step)
-        self.writer.flush()
+        self.tb_writer.add_summary(summary, step)
+        self.tb_writer.flush()
 
     def tensor_summary(self, tag, tensor, step):
         tf_tensor = tf.Variable(tensor).to_proto()
         summary = tf.Summary(value=[tf.Summary.Value(tag=tag, tensor=tf_tensor)])
         #summary = tf.summary.tensor_summary(name=tag, tensor=tensor)
-        self.writer.add_summary(summary, step)
+        self.tb_writer.add_summary(summary, step)
