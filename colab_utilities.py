@@ -48,7 +48,7 @@ class GCSManager():
             blob = blobs[i]
             name = os.path.basename(blob.name)
             file_name = os.path.join(target_location, name)
-            blobs.download_to_filename(file_name)
+            blob.download_to_filename(file_name)
             print("downloaded", file_name)
 
     def download_files_in_background(self, files, target_location):
