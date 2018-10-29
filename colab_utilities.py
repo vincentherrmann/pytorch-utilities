@@ -150,4 +150,13 @@ class SnapshotManager():
         if self.logs_location is not None:
             self.gcs_manager.download_files_from_directory(self.gcs_logs_location, self.current_tb_location)
 
+    def load_latest_snapshot(self):
+        files = glob.glob(os.path.join(self.snapshot_location, '*'))
+        files = sorted(list(files), key=os.path.getmtime, reverse=True)
+        if self.use_only_state_dict:
+            self.model.load_state_dict(torch.load(files[0]))
+        else:
+            self.model = torch.load(files[0])
+        return self.model
+
 
