@@ -1,4 +1,4 @@
-import tensorflow as tf
+from tensorboardX import SummaryWriter
 import numpy as np
 import scipy.misc
 import threading
@@ -131,7 +131,7 @@ class TensorboardLogger(TextLogger):
                  snapshot_interval=1000,
                  background_function=None,
                  background_interval=1000,
-                 log_directory='logs',
+                 log_directory=None,
                  log_histograms=False,
                  model=None):
         super().__init__(log_interval=log_interval,
@@ -141,94 +141,32 @@ class TensorboardLogger(TextLogger):
                          snapshot_interval=snapshot_interval,
                          background_function=background_function,
                          background_interval=background_interval)
-        self.tb_writer = tf.summary.FileWriter(log_directory)
+        self.writer = SummaryWriter(log_directory)
         self.model = model
         self.log_histograms = log_histograms
 
     def log_loss(self, current_step):
         avg_loss = self.accumulated_loss / self.log_interval
-        self.scalar_summary('loss', avg_loss, current_step)
+        self.writer.add_scalar('loss', avg_loss, current_step)
 
     def validate(self, current_step):
         avg_loss, avg_accuracy = self.validation_function()
-        self.scalar_summary('validation loss', avg_loss, current_step)
-        self.scalar_summary('validation accuracy', avg_accuracy, current_step)
+        self.writer.add_scalar('validation loss', avg_loss, current_step)
+        self.writer.add_scalar('validation accuracy', avg_accuracy, current_step)
 
         # parameter histograms
         if not self.log_histograms or self.model is None:
             return
         for tag, value, in self.trainer.model.named_parameters():
             tag = tag.replace('.', '/')
+
             self.histo_summary(tag, value.data.cpu().numpy(), current_step)
             if value.grad is not None:
                 self.histo_summary(tag + '/grad', value.grad.data.cpu().numpy(), current_step)
 
-    def scalar_summary(self, tag, value, step):
-        """Log a scalar variable."""
-        summary = tf.Summary(value=[tf.Summary.Value(tag=tag, simple_value=value)])
-        self.tb_writer.add_summary(summary, step)
-
-    def image_summary(self, tag, images, step):
-        """Log a list of images."""
-
-        img_summaries = []
-        for i, img in enumerate(images):
-            # Write the image to a string
-            try:
-                s = StringIO()
-            except:
-                s = BytesIO()
-            scipy.misc.toimage(img).save(s, format="png")
-
-            # Create an Image object
-            img_sum = tf.Summary.Image(encoded_image_string=s.getvalue(),
-                                       height=img.shape[0],
-                                       width=img.shape[1])
-            # Create a Summary value
-            img_summaries.append(tf.Summary.Value(tag='%s/%d' % (tag, i), image=img_sum))
-
-        # Create and write Summary
-        summary = tf.Summary(value=img_summaries)
-        self.tb_writer.add_summary(summary, step)
-
-    def audio_summary(self, tag, sample, step, sr=16000):
-        with tf.Session() as sess:
-            audio_summary = tf.summary.audio(tag, sample, sample_rate=sr, max_outputs=4)
-            summary = sess.run(audio_summary)
-            self.tb_writer.add_summary(summary, step)
-            self.tb_writer.flush()
-
-
-    def histo_summary(self, tag, values, step, bins=200):
+    def log_histogram(self, tag, values, step, bins=200):
         """Log a histogram of the tensor of values."""
 
         # Create a histogram using numpy
         counts, bin_edges = np.histogram(values, bins=bins)
-
-        # Fill the fields of the histogram proto
-        hist = tf.HistogramProto()
-        hist.min = float(np.min(values))
-        hist.max = float(np.max(values))
-        hist.num = int(np.prod(values.shape))
-        hist.sum = float(np.sum(values))
-        hist.sum_squares = float(np.sum(values ** 2))
-
-        # Drop the start of the first bin
-        bin_edges = bin_edges[1:]
-
-        # Add bin edges and counts
-        for edge in bin_edges:
-            hist.bucket_limit.append(edge)
-        for c in counts:
-            hist.bucket.append(c)
-
-        # Create and write Summary
-        summary = tf.Summary(value=[tf.Summary.Value(tag=tag, histo=hist)])
-        self.tb_writer.add_summary(summary, step)
-        self.tb_writer.flush()
-
-    def tensor_summary(self, tag, tensor, step):
-        tf_tensor = tf.Variable(tensor).to_proto()
-        summary = tf.Summary(value=[tf.Summary.Value(tag=tag, tensor=tf_tensor)])
-        #summary = tf.summary.tensor_summary(name=tag, tensor=tensor)
-        self.tb_writer.add_summary(summary, step)
+        self.writer.add_histogram(tag, counts, step)
