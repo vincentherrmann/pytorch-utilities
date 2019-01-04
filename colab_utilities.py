@@ -107,7 +107,7 @@ class SnapshotManager():
         self.logs_location = logs_location
         self.gcs_manager = gcs_manager
         self.gcs_snapshot_location = snapshot_location if gcs_snapshot_location is None else gcs_snapshot_location
-        self.gcs_logs_location = logs_location if gcs_logs_location is None else gcs_logs_location
+        self.gcs_logs_location = self.current_tb_location if gcs_logs_location is None else gcs_logs_location
         self.use_only_state_dict = use_only_state_dict
 
         self.name = name
