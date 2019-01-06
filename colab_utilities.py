@@ -12,7 +12,10 @@ import glob
 
 class GCSManager:
     def __init__(self, project_id, bucket):
-        auth.authenticate_user()
+        try:
+            auth.authenticate_user()
+        except:
+            print("not on colab")
         self.storage_client = storage.Client(project_id)
         self.bucket = self.storage_client.get_bucket(bucket)
         self.gc_bucket = '' #'gs://' + bucket
