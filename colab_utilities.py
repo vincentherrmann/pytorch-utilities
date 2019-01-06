@@ -1,8 +1,8 @@
-from google.colab import files
-from google.colab import auth
+try:
+    from google.colab import auth
+except:
+    from google import auth
 from google.cloud import storage
-from oauth2client.client import GoogleCredentials
-from operator import itemgetter
 import subprocess
 import os.path
 import threading
@@ -10,7 +10,7 @@ import torch
 import glob
 
 
-class GCSManager():
+class GCSManager:
     def __init__(self, project_id, bucket):
         auth.authenticate_user()
         self.storage_client = storage.Client(project_id)
