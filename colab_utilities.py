@@ -156,10 +156,12 @@ class SnapshotManager():
     def load_latest_snapshot(self):
         files = glob.glob(os.path.join(self.snapshot_location, '*'))
         files = sorted(list(files), key=os.path.getmtime, reverse=True)
+        if self.name not in files[0]:
+            raise Exception('No matching file found')
         if self.use_only_state_dict:
             self.model.load_state_dict(torch.load(files[0]))
         else:
             self.model = torch.load(files[0])
-        return self.model
+        return self.model, files[0]
 
 
