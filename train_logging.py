@@ -29,16 +29,16 @@ class TextLogger:
         self.background_function = background_function
         self.background_interval = background_interval
 
-        self.accumulated_loss = 0
+        self.loss_meter = AverageMeter()
         if self.background_function is not None:
             self.background_thread = threading.Thread(target=self.background_function)
             self.background_thread.daemon = True
 
-    def log(self, current_step, current_loss):
-        self.accumulated_loss += current_loss
+    def log(self, current_step, current_loss=None):
+        if current_loss is not None:
+            self.loss_meter.update(current_loss)
         if current_step % self.log_interval == 0:
             self.log_loss(current_step)
-            self.accumulated_loss = 0
         if current_step % self.validation_interval == 0:
             if self.validation_function is not None:
                 self.validate(current_step)
@@ -50,8 +50,8 @@ class TextLogger:
                 self.background(current_step)
 
     def log_loss(self, current_step):
-        avg_loss = self.accumulated_loss / self.log_interval
-        print("loss at step " + str(current_step) + ": " + str(avg_loss))
+        print("loss at step " + str(current_step) + ": " + str(self.loss_meter.avg))
+        self.loss_meter.reset()
 
     def validate(self, current_step):
         avg_loss, avg_accuracy = self.validation_function()
@@ -94,10 +94,10 @@ class JupyterLogger(TextLogger):
         self.validation_accuracies = []
 
     def log_loss(self, current_step):
-        avg_loss = self.accumulated_loss / self.log_interval
         self.loss_steps.append(current_step)
-        self.loss_values.append(avg_loss)
+        self.loss_values.append(self.loss_meter.avg)
         self.draw()
+        self.loss_meter.reset()
 
     def validate(self, current_step):
         avg_loss, avg_accuracy = self.validation_function()
@@ -146,8 +146,8 @@ class TensorboardLogger(TextLogger):
         self.log_histograms = log_histograms
 
     def log_loss(self, current_step):
-        avg_loss = self.accumulated_loss / self.log_interval
-        self.writer.add_scalar('loss', avg_loss, current_step)
+        self.writer.add_scalar('loss', self.loss_meter.avg, current_step)
+        self.loss_meter.reset()
 
     def validate(self, current_step):
         avg_loss, avg_accuracy = self.validation_function()
@@ -170,3 +170,26 @@ class TensorboardLogger(TextLogger):
         # Create a histogram using numpy
         counts, bin_edges = np.histogram(values, bins=bins)
         self.writer.add_histogram(tag, counts, step)
+
+
+# from pytorch imagenet example
+class AverageMeter(object):
+    """Computes and stores the average, max and current value"""
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.max = -1e38
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        if val > self.max:
+            self.max = val
+        self.count += n
+        self.avg = self.sum / self.count
+
