@@ -144,14 +144,20 @@ class SnapshotManager():
             torch.save(self.model, path)
 
     def upload_latest_files(self):
-        self.gcs_manager.upload_files_from_directory(self.snapshot_location, self.gcs_snapshot_location, max_count=1)
-        if self.logs_location is not None:
-            self.gcs_manager.upload_files_from_directory(self.current_tb_location, self.gcs_logs_location, max_count=1)
+        try:
+            self.gcs_manager.upload_files_from_directory(self.snapshot_location, self.gcs_snapshot_location, max_count=1)
+            if self.logs_location is not None:
+                self.gcs_manager.upload_files_from_directory(self.current_tb_location, self.gcs_logs_location, max_count=1)
+        except:
+            print("unable to upload files")
 
     def download_latest_files(self):
-        self.gcs_manager.download_files_from_directory(self.gcs_snapshot_location, self.snapshot_location, max_count=1)
-        if self.logs_location is not None:
-            self.gcs_manager.download_files_from_directory(self.gcs_logs_location, self.current_tb_location)
+        try:
+            self.gcs_manager.download_files_from_directory(self.gcs_snapshot_location, self.snapshot_location, max_count=1)
+            if self.logs_location is not None:
+                self.gcs_manager.download_files_from_directory(self.gcs_logs_location, self.current_tb_location)
+        except:
+            print("unable to download files")
 
     def load_latest_snapshot(self):
         files = glob.glob(os.path.join(self.snapshot_location, '*'))
