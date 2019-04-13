@@ -8,6 +8,7 @@ import os.path
 import threading
 import torch
 import glob
+from ml_utilities.src.ml_utilities.pytorch_utilities import load_to_cpu
 
 
 class GCSManager:
@@ -103,7 +104,8 @@ class SnapshotManager():
                  logs_location=None,
                  gcs_snapshot_location=None,
                  gcs_logs_location=None,
-                 use_only_state_dict=False):
+                 use_only_state_dict=False,
+                 load_to_cpu=False):
         self.model = model
         self._name = name
         self.snapshot_location = snapshot_location
@@ -112,6 +114,7 @@ class SnapshotManager():
         self.gcs_snapshot_location = snapshot_location if gcs_snapshot_location is None else gcs_snapshot_location
         self.gcs_logs_location = self.current_tb_location if gcs_logs_location is None else gcs_logs_location
         self.use_only_state_dict = use_only_state_dict
+        self.load_to_cpu = load_to_cpu
 
         self.name = name
 
@@ -167,7 +170,11 @@ class SnapshotManager():
         if self.use_only_state_dict:
             self.model.load_state_dict(torch.load(files[0]))
         else:
-            self.model = torch.load(files[0])
+            if self.load_to_cpu:
+                self.model = load_to_cpu(files[0])
+            else:
+                self.model = torch.load(files[0])
         return self.model, files[0]
+
 
 
