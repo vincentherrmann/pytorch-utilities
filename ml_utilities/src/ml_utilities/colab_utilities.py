@@ -8,7 +8,7 @@ import os.path
 import threading
 import torch
 import glob
-from ml_utilities.src.ml_utilities.pytorch_utilities import load_to_cpu
+from ml_utilities.pytorch_utilities import load_to_cpu
 
 
 class GCSManager:
